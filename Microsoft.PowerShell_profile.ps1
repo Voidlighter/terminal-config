@@ -16,6 +16,8 @@
 # Import Terminal Icons
 # Import-Module -Name Terminal-Icons
 
+Set-ExecutionPolicy AllSigned
+
 # Find out if the current user identity is elevated (has admin rights)
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = New-Object Security.Principal.WindowsPrincipal $identity
@@ -185,6 +187,32 @@ function pkill($name) {
 function pgrep($name) {
     Get-Process $name
 }
+
+function Update-Profile {
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Voidlighter/terminal-config/main/Microsoft.PowerShell_profile.ps1" -OutFile "$env:USERPROFILE\Microsoft.PowerShell_profile.ps1"
+    New-Item -ItemType SymbolicLink -Path $PROFILE -Value "$env:USERPROFILE\Microsoft.PowerShell_profile.ps1" -Force
+}
+function Check-Install {
+    param (
+        [string]$appName,
+        [string]$installCommand
+    )
+
+    # Check if the app is already installed
+    $installed = Get-InstalledApps | Where-Object { $_.DisplayName -like "*$appName*" }
+
+    if ($installed -eq $null) {
+        Write-Host "Installing $appName..."
+        Invoke-Expression $installCommand
+    } else {
+        Write-Host "$appName is already installed."
+    }
+}
+
+Check-Install -appName "Chocolatey" -installCommand "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+Check-Install -appName "Zoxide" -installCommand "choco install zoxide"
+Check-Install -appName "Oh-My-Posh" -installCommand "Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://ohmyposh.dev/install.ps1'))"
+
 
 # Import the Chocolatey Profile that contains the necessary code to enable
 # tab-completions to function for `choco`.
