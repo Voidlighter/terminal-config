@@ -89,29 +89,28 @@ Function Test-CommandExists {
     Catch { Write-Host "$command does not exist"; RETURN $false }
     Finally { $ErrorActionPreference = $oldPreference }
 } 
-#
-# Aliases
-#
-# If your favorite editor is not here, add an elseif and ensure that the directory it is installed in exists in your $env:Path
-#
-# if (Test-CommandExists nvim) {
-#     $EDITOR='nvim'
-# } elseif (Test-CommandExists pvim) {
-#     $EDITOR='pvim'
-# } elseif (Test-CommandExists vim) {
-#     $EDITOR='vim'
-# } elseif (Test-CommandExists vi) {
-#     $EDITOR='vi'
-# } elseif (Test-CommandExists code) {
-#     $EDITOR='code'
-# } elseif (Test-CommandExists notepad) {
-#     $EDITOR='notepad'
-# } elseif (Test-CommandExists notepad++) {
-#     $EDITOR='notepad++'
-# } elseif (Test-CommandExists sublime_text) {
-#     $EDITOR='sublime_text'
-# }
-# Set-Alias -Name vim -Value $EDITOR
+
+function Update-Profile {
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Voidlighter/terminal-config/main/Microsoft.PowerShell_profile.ps1" -OutFile "$env:USERPROFILE\Microsoft.PowerShell_profile.ps1"
+    New-Item -ItemType SymbolicLink -Path $PROFILE -Value "$env:USERPROFILE\Microsoft.PowerShell_profile.ps1" -Force
+}
+function Check-Install {
+    param (
+        [string]$appName,
+        [string]$installCommand
+    )
+    if (Test-CommandExists($appName)) {
+        Write-Host "$appName is installed."
+    } else {
+        Write-Host "Installing $appName..."
+        Invoke-Expression $installCommand
+    }
+}
+
+Check-Install -appName "choco" -installCommand "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+Check-Install -appName "nvim" -installCommand "choco install neovim"
+Check-Install -appName "zoxide" -installCommand "choco install zoxide"
+Check-Install -appName "oh-my-posh" -installCommand "choco install oh-my-posh"
 
 Set-Alias -Name vim -Value nvim
 
@@ -185,27 +184,6 @@ function pkill($name) {
 function pgrep($name) {
     Get-Process $name
 }
-
-function Update-Profile {
-    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Voidlighter/terminal-config/main/Microsoft.PowerShell_profile.ps1" -OutFile "$env:USERPROFILE\Microsoft.PowerShell_profile.ps1"
-    New-Item -ItemType SymbolicLink -Path $PROFILE -Value "$env:USERPROFILE\Microsoft.PowerShell_profile.ps1" -Force
-}
-function Check-Install {
-    param (
-        [string]$appName,
-        [string]$installCommand
-    )
-    if (Test-CommandExists($appName)) {
-        Write-Host "$appName is installed."
-    } else {
-        Write-Host "Installing $appName..."
-        Invoke-Expression $installCommand
-    }
-}
-
-Check-Install -appName "choco" -installCommand "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
-Check-Install -appName "zoxide" -installCommand "choco install zoxide"
-Check-Install -appName "oh-my-posh" -installCommand "choco install oh-my-posh"
 
 
 # Import the Chocolatey Profile that contains the necessary code to enable
