@@ -13,26 +13,8 @@
 ### This is the default policy on Windows Server 2012 R2 and above for server Windows. For 
 ### more information about execution policies, run Get-Help about_Execution_Policies.
 
-#check for updates
-try{
-    $url = "https://raw.githubusercontent.com/ChrisTitusTech/powershell-profile/main/Microsoft.PowerShell_profile.ps1"
-    $oldhash = Get-FileHash $PROFILE
-    Invoke-RestMethod $url -OutFile "$env:temp/Microsoft.PowerShell_profile.ps1"
-    $newhash = Get-FileHash "$env:temp/Microsoft.PowerShell_profile.ps1"
-    if ($newhash -ne $oldhash) {
-        Get-Content "$env:temp/Microsoft.PowerShell_profile.ps1" | Set-Content $PROFILE
-        . $PROFILE
-        return
-    }
-}
-catch {
-    Write-Error "unable to check for `$profile updates"
-}
-Remove-Variable @("newhash", "oldhash", "url")
-Remove-Item  "$env:temp/Microsoft.PowerShell_profile.ps1"
-
 # Import Terminal Icons
-Import-Module -Name Terminal-Icons
+# Import-Module -Name Terminal-Icons
 
 # Find out if the current user identity is elevated (has admin rights)
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -52,28 +34,6 @@ function sha256 { Get-FileHash -Algorithm SHA256 $args }
 
 # Quick shortcut to start notepad
 function n { notepad $args }
-
-# Drive shortcuts
-function HKLM: { Set-Location HKLM: }
-function HKCU: { Set-Location HKCU: }
-function Env: { Set-Location Env: }
-
-# Creates drive shortcut for Work Folders, if current user account is using it
-if (Test-Path "$env:USERPROFILE\Work Folders") {
-    New-PSDrive -Name Work -PSProvider FileSystem -Root "$env:USERPROFILE\Work Folders" -Description "Work Folders"
-    function Work: { Set-Location Work: }
-}
-
-# Set up command prompt and window title. Use UNIX-style convention for identifying 
-# whether user is elevated (root) or not. Window title shows current version of PowerShell
-# and appends [ADMIN] if appropriate for easy taskbar identification
-function prompt { 
-    if ($isAdmin) {
-        "[" + (Get-Location) + "] # " 
-    } else {
-        "[" + (Get-Location) + "] $ "
-    }
-}
 
 $Host.UI.RawUI.WindowTitle = "PowerShell {0}" -f $PSVersionTable.PSVersion.ToString()
 if ($isAdmin) {
@@ -121,37 +81,39 @@ function Edit-Profile {
 Remove-Variable identity
 Remove-Variable principal
 
-Function Test-CommandExists {
-    Param ($command)
-    $oldPreference = $ErrorActionPreference
-    $ErrorActionPreference = 'SilentlyContinue'
-    try { if (Get-Command $command) { RETURN $true } }
-    Catch { Write-Host "$command does not exist"; RETURN $false }
-    Finally { $ErrorActionPreference = $oldPreference }
-} 
+# Function Test-CommandExists {
+#     Param ($command)
+#     $oldPreference = $ErrorActionPreference
+#     $ErrorActionPreference = 'SilentlyContinue'
+#     try { if (Get-Command $command) { RETURN $true } }
+#     Catch { Write-Host "$command does not exist"; RETURN $false }
+#     Finally { $ErrorActionPreference = $oldPreference }
+# } 
 #
 # Aliases
 #
 # If your favorite editor is not here, add an elseif and ensure that the directory it is installed in exists in your $env:Path
 #
-if (Test-CommandExists nvim) {
-    $EDITOR='nvim'
-} elseif (Test-CommandExists pvim) {
-    $EDITOR='pvim'
-} elseif (Test-CommandExists vim) {
-    $EDITOR='vim'
-} elseif (Test-CommandExists vi) {
-    $EDITOR='vi'
-} elseif (Test-CommandExists code) {
-    $EDITOR='code'
-} elseif (Test-CommandExists notepad) {
-    $EDITOR='notepad'
-} elseif (Test-CommandExists notepad++) {
-    $EDITOR='notepad++'
-} elseif (Test-CommandExists sublime_text) {
-    $EDITOR='sublime_text'
-}
-Set-Alias -Name vim -Value $EDITOR
+# if (Test-CommandExists nvim) {
+#     $EDITOR='nvim'
+# } elseif (Test-CommandExists pvim) {
+#     $EDITOR='pvim'
+# } elseif (Test-CommandExists vim) {
+#     $EDITOR='vim'
+# } elseif (Test-CommandExists vi) {
+#     $EDITOR='vi'
+# } elseif (Test-CommandExists code) {
+#     $EDITOR='code'
+# } elseif (Test-CommandExists notepad) {
+#     $EDITOR='notepad'
+# } elseif (Test-CommandExists notepad++) {
+#     $EDITOR='notepad++'
+# } elseif (Test-CommandExists sublime_text) {
+#     $EDITOR='sublime_text'
+# }
+# Set-Alias -Name vim -Value $EDITOR
+
+Set-Alias -Name vim -Value nvim
 
 
 function ll { Get-ChildItem -Path $pwd -File }
@@ -238,4 +200,4 @@ Invoke-Expression (& { (zoxide init powershell | Out-String) })
 
 
 ## Final Line to set prompt
-oh-my-posh init pwsh --config https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/cobalt2.omp.json | Invoke-Expression
+oh-my-posh init pwsh --config 'https://raw.githubusercontent.com/Voidlighter/oh-my-posh-theme/main/cadeslim.omp.json' | Invoke-Expression
