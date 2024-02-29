@@ -16,8 +16,6 @@
 # Import Terminal Icons
 # Import-Module -Name Terminal-Icons
 
-Set-ExecutionPolicy AllSigned
-
 # Find out if the current user identity is elevated (has admin rights)
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = New-Object Security.Principal.WindowsPrincipal $identity
@@ -83,14 +81,14 @@ function Edit-Profile {
 Remove-Variable identity
 Remove-Variable principal
 
-# Function Test-CommandExists {
-#     Param ($command)
-#     $oldPreference = $ErrorActionPreference
-#     $ErrorActionPreference = 'SilentlyContinue'
-#     try { if (Get-Command $command) { RETURN $true } }
-#     Catch { Write-Host "$command does not exist"; RETURN $false }
-#     Finally { $ErrorActionPreference = $oldPreference }
-# } 
+Function Test-CommandExists {
+    Param ($command)
+    $oldPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'SilentlyContinue'
+    try { if (Get-Command $command) { RETURN $true } }
+    Catch { Write-Host "$command does not exist"; RETURN $false }
+    Finally { $ErrorActionPreference = $oldPreference }
+} 
 #
 # Aliases
 #
@@ -197,21 +195,17 @@ function Check-Install {
         [string]$appName,
         [string]$installCommand
     )
-
-    # Check if the app is already installed
-    $installed = Get-InstalledApps | Where-Object { $_.DisplayName -like "*$appName*" }
-
-    if ($installed -eq $null) {
+    if (Test-CommandExists($appName)) {
+        Write-Host "$appName is installed."
+    } else {
         Write-Host "Installing $appName..."
         Invoke-Expression $installCommand
-    } else {
-        Write-Host "$appName is already installed."
     }
 }
 
-Check-Install -appName "Chocolatey" -installCommand "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
-Check-Install -appName "Zoxide" -installCommand "choco install zoxide"
-Check-Install -appName "Oh-My-Posh" -installCommand "Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://ohmyposh.dev/install.ps1'))"
+Check-Install -appName "choco" -installCommand "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+Check-Install -appName "zoxide" -installCommand "choco install zoxide"
+Check-Install -appName "oh-my-posh" -installCommand "choco install oh-my-posh"
 
 
 # Import the Chocolatey Profile that contains the necessary code to enable
