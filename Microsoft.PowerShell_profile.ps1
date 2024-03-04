@@ -107,10 +107,10 @@ function Check-Install {
     }
 }
 
-Check-Install -appName "choco" -installCommand "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) -Confirm"
-Check-Install -appName "nvim" -installCommand "choco install neovim -Confirm"
-Check-Install -appName "zoxide" -installCommand "choco install zoxide -Confirm"
-Check-Install -appName "oh-my-posh" -installCommand "choco install oh-my-posh -Confirm"
+Check-Install -appName "choco" -installCommand "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+Check-Install -appName "nvim" -installCommand "choco install neovim"
+Check-Install -appName "zoxide" -installCommand "choco install zoxide"
+Check-Install -appName "oh-my-posh" -installCommand "choco install oh-my-posh"
 
 Set-Alias -Name vim -Value nvim
 
